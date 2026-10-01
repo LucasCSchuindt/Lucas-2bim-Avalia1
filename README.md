@@ -22,6 +22,6 @@ Framework preset: `None`. Build command: vazio. Build output directory: `public`
 
 ## Identificação (preencha após o fork)
 
-Nome: 
-RA: 
-URL: https://
+Nome: Lucas Carneiro Schuindt
+RA: 2026108691
+URL: https:// 
