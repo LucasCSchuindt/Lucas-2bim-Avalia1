@@ -1,38 +1,79 @@
 // script.js
-// Versao inicial: todo o trabalho acontece no navegador.
-// A tarefa consiste em levar gerarDesenho para o servidor (Pages Functions)
-// e fazer esta pagina apenas enviar o numero e exibir a resposta.
+// Envia o número e o id_token do Google para /api/desenho e exibe o SVG.
+// O e-mail da assinatura é decidido pelo servidor, a partir do token.
 
-import { gerarDesenho, numeroValido } from "./desenho.js";
+const CLIENT_ID = "COLE_SEU_CLIENT_ID_AQUI.apps.googleusercontent.com";
 
 const formulario = document.getElementById("formulario");
 const campoNumero = document.getElementById("numero");
-const campoEmail = document.getElementById("email");
 const area = document.getElementById("desenho");
 const mensagem = document.getElementById("mensagem");
+const statusLogin = document.getElementById("status");
 const botaoBaixar = document.getElementById("baixar");
 
+let idToken = null;
 let svgAtual = "";
 
-formulario.addEventListener("submit", (evento) => {
+function aoLogar(resposta) {
+  idToken = resposta.credential;
+  statusLogin.textContent = "Login com o Google realizado.";
+  mensagem.textContent = "";
+}
+
+window.addEventListener("load", () => {
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: aoLogar,
+  });
+  google.accounts.id.renderButton(document.getElementById("login"), {
+    theme: "outline",
+    size: "large",
+  });
+});
+
+formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
   mensagem.textContent = "";
 
+  if (!idToken) {
+    mensagem.textContent = "Entre com o Google antes de desenhar.";
+    return;
+  }
+
   const numero = Number(campoNumero.value);
-  const email = campoEmail.value.trim();
 
-  if (!numeroValido(numero)) {
-    mensagem.textContent = "Digite um inteiro entre 1 e 100.";
-    return;
-  }
-  if (email === "") {
-    mensagem.textContent = "Informe um e-mail.";
-    return;
-  }
+  try {
+    const resposta = await fetch("/api/desenho", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + idToken,
+      },
+      body: JSON.stringify({ numero }),
+    });
 
-  svgAtual = gerarDesenho(numero, email);
-  area.innerHTML = svgAtual;
-  botaoBaixar.hidden = false;
+    if (resposta.status === 400) {
+      mensagem.textContent = "Erro 400: digite um inteiro entre 1 e 100.";
+      return;
+    }
+    if (resposta.status === 401) {
+      mensagem.textContent =
+        "Erro 401: não autorizado. Entre novamente com o Google.";
+      idToken = null;
+      statusLogin.textContent = "";
+      return;
+    }
+    if (!resposta.ok) {
+      mensagem.textContent = "Erro inesperado (" + resposta.status + ").";
+      return;
+    }
+
+    svgAtual = await resposta.text();
+    area.innerHTML = svgAtual;
+    botaoBaixar.hidden = false;
+  } catch {
+    mensagem.textContent = "Falha de rede ao chamar o servidor.";
+  }
 });
 
 botaoBaixar.addEventListener("click", () => {
