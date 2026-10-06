@@ -2,7 +2,7 @@
 // Envia o número e o id_token do Google para /api/desenho e exibe o SVG.
 // O e-mail da assinatura é decidido pelo servidor, a partir do token.
 
-const CLIENT_ID = "COLE_SEU_CLIENT_ID_AQUI.apps.googleusercontent.com";
+const CLIENT_ID = "1053606741739-08grbsdtaafvvlo3h0lrm1k3j14i3o28.apps.googleusercontent.com";
 
 const formulario = document.getElementById("formulario");
 const campoNumero = document.getElementById("numero");
