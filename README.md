@@ -24,4 +24,4 @@ Framework preset: `None`. Build command: vazio. Build output directory: `public`
 
 Nome: Lucas Carneiro Schuindt
 RA: 2026108691
-URL: https:// 
+URL: URL: https://lucas-2bim-avalia1.pages.dev
